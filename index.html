@@ -661,10 +661,10 @@
     // Load Complexity results
     const complexityColumns = [
       'dataset,
-      'hardness_metric,
+      'hardness_metric',
       'seed',
       'weighting_strategy',
-      'differnce_score'
+      'difference_score'
     ];
     loadCSVTable('Complexity_results.csv', 'complexity-table', 'complexity-loading',
       complexityColumns, ['dataset', 'hardness_metric', 'weighting_strategy']);
@@ -678,7 +678,7 @@
       'dataset',
       'Classifier',
       'weighting_strategy',
-      'hardness_metrics',
+      'hardness_metric',
       'metric',
       'gain_index',
       'gain_disparity'
