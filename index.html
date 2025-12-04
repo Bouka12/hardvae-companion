@@ -651,28 +651,50 @@ conda activate hardvae</code></pre>
       'random_seed',
       'weighting_strategy',
       'Bottleneck_H0_mean',
-      'Bottleneck_H0_std',
-      'Wasserstein_H0_mean',
-      'Wasserstein_H0_std'
+      'Bottleneck_H0_std'
     ];
     loadCSVTable('Topological_results.csv', 'topological-table', 'topological-loading', 
       topologicalColumns, ['dataset', 'hardness_metric', 'weighting_strategy']);
     
     // Load Hardness results
+    const hardnessColumns = [
+      'dataset',
+      'hardness_metric',
+      'random_seed',
+      'weighting_strategy',
+      'ks_mean'
+      ];
     loadCSVTable('Hardness_results.csv', 'hardness-table', 'hardness-loading',
-      null, ['dataset', 'hardness_metric', 'weighting_strategy']);
+      hardnessColumns, ['dataset', 'hardness_metric', 'weighting_strategy']);
     
     // Load Complexity results
+    const complexityColumns = [
+      'dataset,
+      'hardness_metric,
+      'seed',
+      'weighting_strategy',
+      'differnce_score'
+    ];
     loadCSVTable('Complexity_results.csv', 'complexity-table', 'complexity-loading',
-      null, ['dataset', 'hardness_metric', 'weighting_strategy']);
+      complexityColumns, ['dataset', 'hardness_metric', 'weighting_strategy']);
     
     // Load Utility Gains
     loadCSVTable('utility_gains.csv', 'utility-gains-table', 'utility-gains-loading',
       null, ['dataset', 'Classifier', 'weighting_strategy', 'hardness_metric', 'metric']);
     
     // Load Gain Indices
+    const gainindicesColumns = [
+      'dataset',
+      'Classifier',
+      'weighting_strategy',
+      'hardness_metrics',
+      'metric',
+      'gain_index',
+      'gain_disparity'
+      ];
+      
     loadCSVTable('gain_indices.csv', 'gain-indices-table', 'gain-indices-loading',
-      null, ['dataset', 'Classifier', 'weighting_strategy', 'hardness_metric', 'metric']);
+      gainindicesColumns, ['dataset', 'Classifier', 'weighting_strategy', 'hardness_metric', 'metric']);
   });
 </script>
 
