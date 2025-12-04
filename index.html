@@ -436,7 +436,14 @@
     <ul>
       <li><strong>HardVAE Implementation:</strong> [Link to repository]</li>
       <li><strong>Experiments & Evaluation:</strong> [Link to repository]</li>
+      <li><strong>Configuration Files:</strong> [Link to repository]</li>
     </ul>
+    <h3>Environment Setup</h3>
+    <p>To reproduce the experiments, set up the environment using:</p>
+    <pre><code>conda env create -f environment.yml
+conda activate hardvae</code></pre>
+    <h3>Running Experiments</h3>
+    <p>Detailed instructions for running experiments are provided in the respective repository READMEs.</p>
   </section>
 
   <section id="downloads">
@@ -445,6 +452,7 @@
       <li><strong>Main Manuscript (PDF):</strong> [link]</li>
       <li><strong>Supplementary Appendix (PDF):</strong> [link]</li>
       <li><strong>Additional Figures (ZIP):</strong> [link]</li>
+      <li><strong>Configuration Files & Logs (ZIP):</strong> [link]</li>
       <li><strong>Results Data (CSV):</strong> [link]</li>
     </ul>
   </section>
@@ -654,15 +662,15 @@
       'random_seed',
       'weighting_strategy',
       'ks_mean'
-      ];
+    ];
     loadCSVTable('Hardness_results.csv', 'hardness-table', 'hardness-loading',
       hardnessColumns, ['dataset', 'hardness_metric', 'weighting_strategy']);
     
     // Load Complexity results
     const complexityColumns = [
-      'dataset,
+      'dataset',
       'hardness_metric',
-      'seed',
+      'random_seed',
       'weighting_strategy',
       'difference_score'
     ];
@@ -682,7 +690,7 @@
       'metric',
       'gain_index',
       'gain_disparity'
-      ];
+    ];
       
     loadCSVTable('gain_indices.csv', 'gain-indices-table', 'gain-indices-loading',
       gainindicesColumns, ['dataset', 'Classifier', 'weighting_strategy', 'hardness_metric', 'metric']);
