@@ -218,6 +218,20 @@
       margin-top: 15px;
     }
     
+    .filter-row {
+      background: #f0f0f0;
+    }
+    
+    .filter-row td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .column-filter {
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
+    
     @media (max-width: 768px) {
       header h1 {
         font-size: 1.4rem;
@@ -480,6 +494,50 @@ conda activate hardvae</code></pre>
     return { headers: filteredHeaders, data: filteredData };
   }
   
+  // Get unique values for a column
+  function getUniqueValues(data, columnName) {
+    const values = new Set();
+    data.forEach(row => {
+      if (row[columnName]) {
+        values.add(row[columnName]);
+      }
+    });
+    return Array.from(values).sort();
+  }
+  
+  // Add column-level filters for categorical columns
+  function addColumnFilters(tableId, data, categoricalColumns) {
+    const table = $("#" + tableId).DataTable();
+    const headerRow = $("#" + tableId + " thead tr");
+    const filterRow = $("<tr class=\"filter-row\"></tr>");
+    
+    table.columns().every(function(colIndex) {
+      const column = this;
+      const columnName = column.header().textContent.trim();
+      let filterCell = $("<td></td>");
+      
+      if (categoricalColumns.includes(columnName)) {
+        const uniqueValues = getUniqueValues(data, columnName);
+        const select = $("<select class=\"column-filter\" style=\"width: 100%; padding: 5px; border: 1px solid #ccc; border-radius: 3px;\"><option value=\"\">All</option></select>");
+        
+        uniqueValues.forEach(value => {
+          select.append("<option value=\"" + value + "\">" + value + "</option>");
+        });
+        
+        select.on("change", function() {
+          const val = $.fn.dataTable.util.escapeRegex($(this).val());
+          column.search(val ? "^" + val + "$" : "", true, false).draw();
+        });
+        
+        filterCell.append(select);
+      }
+      
+      filterRow.append(filterCell);
+    });
+    
+    $("#" + tableId + " thead").append(filterRow);
+  }
+  
   // Tab switching function
   function switchTab(evt, tabName) {
     const tabContents = document.querySelectorAll('.tab-content');
@@ -523,21 +581,33 @@ conda activate hardvae</code></pre>
           $(`#${tableId}`).DataTable().destroy();
         }
         
-        $(`#${tableId}`).DataTable({
+        const dataTable = $(`#${tableId}`).DataTable({
           columns: dtConfig.columns,
           data: dtConfig.data,
           pageLength: 25,
           lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
           dom: 'lBfrtip',
-          buttons: [
-            'copy',
-            'csv',
-            'excel',
-            'pdf'
-          ],
+          buttons: ['copy', 'csv', 'excel', 'pdf'],
           responsive: true,
           autoWidth: false
         });
+        
+        let categoricalColumns = [];
+        if (tableId === 'distributional-table') {
+          categoricalColumns = ['dataset', 'hardness_metric', 'weighting_strategy'];
+        } else if (tableId === 'topological-table') {
+          categoricalColumns = ['dataset', 'hardness_metric', 'weighting_strategy'];
+        } else if (tableId === 'hardness-table') {
+          categoricalColumns = ['dataset', 'hardness_metric', 'weighting_strategy'];
+        } else if (tableId === 'complexity-table') {
+          categoricalColumns = ['dataset', 'hardness_metric', 'weighting_strategy'];
+        } else if (tableId === 'utility-gains-table') {
+          categoricalColumns = ['dataset', 'Classifier', 'weighting_strategy', 'hardness_metric', 'metric'];
+        } else if (tableId === 'gain-indices-table') {
+          categoricalColumns = ['dataset', 'Classifier', 'weighting_strategy', 'hardness_metric', 'metric'];
+        }
+        
+        addColumnFilters(tableId, dtConfig.data, categoricalColumns);
       })
       .catch(error => {
         console.error(`Error loading ${csvFile}:`, error);
