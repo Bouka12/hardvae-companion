@@ -149,6 +149,11 @@
       padding: 12px;
       text-align: left;
       font-weight: 600;
+      cursor: pointer;
+    }
+    
+    th:hover {
+      background: #0d1419;
     }
     
     td {
@@ -162,6 +167,32 @@
     
     tbody tr:nth-child(even) {
       background: #fafafa;
+    }
+    
+    /* Filter row styling */
+    .filter-row {
+      background: #e8f4f8;
+    }
+    
+    .filter-row td {
+      padding: 10px 8px;
+      border-bottom: 2px solid #1b2735;
+    }
+    
+    .filter-row select {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #999;
+      border-radius: 3px;
+      font-size: 0.85rem;
+      background-color: white;
+      cursor: pointer;
+    }
+    
+    .filter-row select:focus {
+      outline: none;
+      border-color: #1b2735;
+      box-shadow: 0 0 3px rgba(27, 39, 53, 0.3);
     }
     
     .info-box {
@@ -218,20 +249,6 @@
       margin-top: 15px;
     }
     
-    .filter-row {
-      background: #f0f0f0;
-    }
-    
-    .filter-row td {
-      padding: 8px 12px;
-      border-bottom: 1px solid #ddd;
-    }
-    
-    .column-filter {
-      font-size: 0.9rem;
-      font-family: inherit;
-    }
-    
     @media (max-width: 768px) {
       header h1 {
         font-size: 1.4rem;
@@ -260,6 +277,10 @@
       
       th, td {
         padding: 8px;
+      }
+      
+      .filter-row select {
+        font-size: 0.75rem;
       }
     }
   </style>
@@ -333,8 +354,8 @@
     
     <div class="info-box">
       <p>
-        <strong>Interactive Tables:</strong> All tables below support filtering, sorting, and pagination. 
-        Use the search box to filter results, click column headers to sort, and use the entries dropdown to adjust rows per page.
+        <strong>Interactive Tables:</strong> Use the dropdown filters below each column header to filter by categorical values. 
+        Use the search box to search across all columns, click headers to sort, and use the entries dropdown to adjust rows per page.
       </p>
     </div>
 
@@ -505,39 +526,6 @@ conda activate hardvae</code></pre>
     return Array.from(values).sort();
   }
   
-  // Add column-level filters for categorical columns
-  function addColumnFilters(tableId, data, categoricalColumns) {
-    const table = $("#" + tableId).DataTable();
-    const headerRow = $("#" + tableId + " thead tr");
-    const filterRow = $("<tr class=\"filter-row\"></tr>");
-    
-    table.columns().every(function(colIndex) {
-      const column = this;
-      const columnName = column.header().textContent.trim();
-      let filterCell = $("<td></td>");
-      
-      if (categoricalColumns.includes(columnName)) {
-        const uniqueValues = getUniqueValues(data, columnName);
-        const select = $("<select class=\"column-filter\" style=\"width: 100%; padding: 5px; border: 1px solid #ccc; border-radius: 3px;\"><option value=\"\">All</option></select>");
-        
-        uniqueValues.forEach(value => {
-          select.append("<option value=\"" + value + "\">" + value + "</option>");
-        });
-        
-        select.on("change", function() {
-          const val = $.fn.dataTable.util.escapeRegex($(this).val());
-          column.search(val ? "^" + val + "$" : "", true, false).draw();
-        });
-        
-        filterCell.append(select);
-      }
-      
-      filterRow.append(filterCell);
-    });
-    
-    $("#" + tableId + " thead").append(filterRow);
-  }
-  
   // Tab switching function
   function switchTab(evt, tabName) {
     const tabContents = document.querySelectorAll('.tab-content');
@@ -550,8 +538,51 @@ conda activate hardvae</code></pre>
     evt.target.classList.add('active');
   }
   
+  // Add column filters AFTER table is initialized
+  function addColumnFilters(tableId, data, categoricalColumns) {
+    const table = $(`#${tableId}`).DataTable();
+    
+    // Create filter row
+    const filterRow = $('<tr class="filter-row"></tr>');
+    
+    // Get all column indices
+    table.columns().every(function(colIndex) {
+      const column = this;
+      const columnName = column.header().textContent.trim();
+      const td = $('<td></td>');
+      
+      // Only add filter for categorical columns
+      if (categoricalColumns.includes(columnName)) {
+        const uniqueValues = getUniqueValues(data, columnName);
+        const select = $('<select></select>');
+        select.append('<option value="">All</option>');
+        
+        uniqueValues.forEach(value => {
+          select.append(`<option value="${value}">${value}</option>`);
+        });
+        
+        // Filter on change
+        select.on('change', function() {
+          const searchValue = $(this).val();
+          if (searchValue === '') {
+            column.search('').draw();
+          } else {
+            column.search('^' + searchValue + '$', true, false).draw();
+          }
+        });
+        
+        td.append(select);
+      }
+      
+      filterRow.append(td);
+    });
+    
+    // Add filter row to table header
+    $(`#${tableId} thead`).append(filterRow);
+  }
+  
   // Load CSV and initialize DataTable
-  function loadCSVTable(csvFile, tableId, loadingId, columnsToKeep = null) {
+  function loadCSVTable(csvFile, tableId, loadingId, columnsToKeep = null, categoricalColumns = []) {
     fetch(`data/${csvFile}`)
       .then(response => {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -581,7 +612,7 @@ conda activate hardvae</code></pre>
           $(`#${tableId}`).DataTable().destroy();
         }
         
-        const dataTable = $(`#${tableId}`).DataTable({
+        $(`#${tableId}`).DataTable({
           columns: dtConfig.columns,
           data: dtConfig.data,
           pageLength: 25,
@@ -592,22 +623,10 @@ conda activate hardvae</code></pre>
           autoWidth: false
         });
         
-        let categoricalColumns = [];
-        if (tableId === 'distributional-table') {
-          categoricalColumns = ['dataset', 'hardness_metric', 'weighting_strategy'];
-        } else if (tableId === 'topological-table') {
-          categoricalColumns = ['dataset', 'hardness_metric', 'weighting_strategy'];
-        } else if (tableId === 'hardness-table') {
-          categoricalColumns = ['dataset', 'hardness_metric', 'weighting_strategy'];
-        } else if (tableId === 'complexity-table') {
-          categoricalColumns = ['dataset', 'hardness_metric', 'weighting_strategy'];
-        } else if (tableId === 'utility-gains-table') {
-          categoricalColumns = ['dataset', 'Classifier', 'weighting_strategy', 'hardness_metric', 'metric'];
-        } else if (tableId === 'gain-indices-table') {
-          categoricalColumns = ['dataset', 'Classifier', 'weighting_strategy', 'hardness_metric', 'metric'];
+        // Add column filters AFTER table is initialized
+        if (categoricalColumns.length > 0) {
+          addColumnFilters(tableId, data, categoricalColumns);
         }
-        
-        addColumnFilters(tableId, dtConfig.data, categoricalColumns);
       })
       .catch(error => {
         console.error(`Error loading ${csvFile}:`, error);
@@ -621,10 +640,11 @@ conda activate hardvae</code></pre>
     // Set update date
     document.getElementById('update-date').textContent = new Date().toLocaleDateString();
     
-    // Load tables
-    loadCSVTable('Distributional_results.csv', 'distributional-table', 'distributional-loading');
+    // Load Distributional results
+    loadCSVTable('Distributional_results.csv', 'distributional-table', 'distributional-loading', 
+      null, ['dataset', 'hardness_metric', 'weighting_strategy']);
     
-    // Load Topological results with only selected columns
+    // Load Topological results with filtered columns
     const topologicalColumns = [
       'dataset',
       'hardness_metric',
@@ -635,12 +655,24 @@ conda activate hardvae</code></pre>
       'Wasserstein_H0_mean',
       'Wasserstein_H0_std'
     ];
-    loadCSVTable('Topological_results.csv', 'topological-table', 'topological-loading', topologicalColumns);
+    loadCSVTable('Topological_results.csv', 'topological-table', 'topological-loading', 
+      topologicalColumns, ['dataset', 'hardness_metric', 'weighting_strategy']);
     
-    loadCSVTable('Hardness_results.csv', 'hardness-table', 'hardness-loading');
-    loadCSVTable('Complexity_results.csv', 'complexity-table', 'complexity-loading');
-    loadCSVTable('utility_gains.csv', 'utility-gains-table', 'utility-gains-loading');
-    loadCSVTable('gain_indices.csv', 'gain-indices-table', 'gain-indices-loading');
+    // Load Hardness results
+    loadCSVTable('Hardness_results.csv', 'hardness-table', 'hardness-loading',
+      null, ['dataset', 'hardness_metric', 'weighting_strategy']);
+    
+    // Load Complexity results
+    loadCSVTable('Complexity_results.csv', 'complexity-table', 'complexity-loading',
+      null, ['dataset', 'hardness_metric', 'weighting_strategy']);
+    
+    // Load Utility Gains
+    loadCSVTable('utility_gains.csv', 'utility-gains-table', 'utility-gains-loading',
+      null, ['dataset', 'Classifier', 'weighting_strategy', 'hardness_metric', 'metric']);
+    
+    // Load Gain Indices
+    loadCSVTable('gain_indices.csv', 'gain-indices-table', 'gain-indices-loading',
+      null, ['dataset', 'Classifier', 'weighting_strategy', 'hardness_metric', 'metric']);
   });
 </script>
 
