@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HardVAE – Companion Website</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+  
+  <style>
+    * { box-sizing: border-box; }
+    
+    body { 
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; 
+      margin: 0; 
+      padding: 0; 
+      line-height: 1.6;
+      background: #f9f9f9;
+    }
+    
+    header { 
+      background: linear-gradient(135deg, #1b2735 0%, #090a0f 100%);
+      color: #fff; 
+      padding: 30px 20px; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    header h1 { 
+      margin: 0 0 10px 0; 
+      font-size: 2rem; 
+      font-weight: 600;
+    }
+    
+    header p {
+      margin: 5px 0;
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+    
+    nav { 
+      margin-top: 15px; 
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    nav a { 
+      color: #fff; 
+      text-decoration: none; 
+      font-size: 0.95rem;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background 0.3s ease;
+    }
+    
+    nav a:hover { 
+      background: rgba(255,255,255,0.2);
+    }
+    
+    main { 
+      padding: 40px 20px; 
+      max-width: 1200px; 
+      margin: 0 auto; 
+    }
+    
+    section { 
+      margin-bottom: 50px;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    
+    h2 { 
+      border-bottom: 3px solid #1b2735;
+      padding-bottom: 12px;
+      margin-top: 0;
+      font-size: 1.6rem;
+      color: #1b2735;
+    }
+    
+    h3 {
+      color: #333;
+      margin-top: 25px;
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+    }
+    
+    .tab-container {
+      margin: 20px 0;
+    }
+    
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    
+    .tab-button {
+      padding: 12px 20px;
+      background: #f5f5f5;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      border-radius: 4px 4px 0 0;
+      transition: all 0.3s ease;
+      color: #333;
+      font-weight: 500;
+    }
+    
+    .tab-button:hover {
+      background: #e8e8e8;
+    }
+    
+    .tab-button.active {
+      background: #1b2735;
+      color: white;
+    }
+    
+    .tab-content {
+      display: none;
+      padding: 20px 0;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .dataTables_wrapper {
+      margin: 20px 0;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    
+    thead {
+      background: #1b2735;
+      color: white;
+    }
+    
+    th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+    
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    tbody tr:hover {
+      background: #f5f5f5;
+    }
+    
+    tbody tr:nth-child(even) {
+      background: #fafafa;
+    }
+    
+    .info-box {
+      background: #e3f2fd;
+      border-left: 4px solid #1b2735;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+    }
+    
+    .info-box p {
+      margin: 0;
+      color: #333;
+    }
+    
+    ul {
+      margin: 15px 0;
+      padding-left: 25px;
+    }
+    
+    li {
+      margin: 8px 0;
+    }
+    
+    footer { 
+      background: #1b2735; 
+      color: #fff;
+      padding: 20px; 
+      text-align: center; 
+      font-size: 0.85rem; 
+      margin-top: 50px;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+    
+    .error {
+      background: #ffebee;
+      border-left: 4px solid #c62828;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+      color: #c62828;
+    }
+    
+    .dataTables_length, .dataTables_filter {
+      margin-bottom: 15px;
+    }
+    
+    .dataTables_paginate {
+      margin-top: 15px;
+    }
+    
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 1.4rem;
+      }
+      
+      nav {
+        gap: 10px;
+      }
+      
+      nav a {
+        font-size: 0.85rem;
+        padding: 6px 10px;
+      }
+      
+      main {
+        padding: 20px 10px;
+      }
+      
+      section {
+        padding: 20px;
+      }
+      
+      table {
+        font-size: 0.8rem;
+      }
+      
+      th, td {
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>HardVAE – Hardness-Aware Variational Autoencoders</h1>
+  <p>Companion Website for Synthetic Data Generation in Imbalanced Learning</p>
+  <nav>
+    <a href="#home">Home</a>
+    <a href="#overview">HardVAE Overview</a>
+    <a href="#fidelity">Multi-View Fidelity</a>
+    <a href="#results">Results Explorer</a>
+    <a href="#hardness">Hardness Measures</a>
+    <a href="#repro">Reproducibility & Code</a>
+    <a href="#downloads">Downloads</a>
+  </nav>
+</header>
+
+<main>
+  <section id="home">
+    <h2>Home</h2>
+    <p>
+      This companion website provides extended material for the paper
+      <strong>"Hardness-Aware Variational Autoencoders for Synthetic Data Generation in Imbalanced Learning"</strong>.
+      It complements the main manuscript and the Supplementary Appendix by offering interactive visualizations,
+      extended result summaries, and reproducibility resources for the HardVAE framework and the multi-view fidelity
+      evaluation method.
+    </p>
+    <p>
+      Explore the interactive tables below to examine detailed results across multiple datasets, hardness measures,
+      and weighting strategies. All data is filterable and sortable for easy exploration.
+    </p>
+  </section>
+
+  <section id="overview">
+    <h2>HardVAE Overview</h2>
+    <p>
+      HardVAE is a hardness-aware variational autoencoder designed to improve synthetic data generation in imbalanced
+      tabular settings. Unlike standard VAEs, which implicitly treat all training instances as equally informative,
+      HardVAE integrates instance hardness directly into the generative objective. Harder instances (e.g., borderline,
+      rare, or noisy samples) receive higher weight in the reconstruction loss, leading to synthetic data that better
+      captures the structural variability of the minority class.
+    </p>
+    <p>
+      The framework supports multiple weighting strategies (static, curriculum, self-paced) and can incorporate
+      different hardness estimators, enabling a flexible treatment of instance difficulty. On top of that, a multi-view
+      fidelity framework evaluates the realism of synthetic data from distributional, topological, hardness-based, and
+      complexity-based perspectives.
+    </p>
+  </section>
+
+  <section id="fidelity">
+    <h2>Multi-View Fidelity Framework</h2>
+    <p>
+      Traditional synthetic data evaluation often focuses on a single view, typically distributional similarity or
+      downstream predictive performance. In contrast, our multi-view fidelity framework integrates four complementary
+      perspectives: distributional, topological, hardness-based, and complexity-based fidelity.
+    </p>
+    <ul>
+      <li><strong>Distributional fidelity</strong> – Marginal alignment between real and synthetic data (e.g., KS statistics).</li>
+      <li><strong>Topological fidelity</strong> – Preservation of manifold structure via topological data analysis.</li>
+      <li><strong>Hardness-based fidelity</strong> – Transfer of instance difficulty patterns from real to synthetic data.</li>
+      <li><strong>Complexity-based fidelity</strong> – Similarity of classification difficulty based on data-complexity meta-features.</li>
+    </ul>
+  </section>
+
+  <section id="results">
+    <h2>Results Explorer</h2>
+    
+    <div class="info-box">
+      <p>
+        <strong>Interactive Tables:</strong> All tables below support filtering, sorting, and pagination. 
+        Use the search box to filter results, click column headers to sort, and use the entries dropdown to adjust rows per page.
+      </p>
+    </div>
+
+    <!-- Multi-View Fidelity Results -->
+    <h3>Multi-View Fidelity Results</h3>
+    
+    <div class="tab-container">
+      <div class="tabs">
+        <button class="tab-button active" onclick="switchTab(event, 'distributional')">Distributional Fidelity</button>
+        <button class="tab-button" onclick="switchTab(event, 'topological')">Topological Fidelity</button>
+        <button class="tab-button" onclick="switchTab(event, 'hardness')">Hardness-Based Fidelity</button>
+        <button class="tab-button" onclick="switchTab(event, 'complexity')">Complexity-Based Fidelity</button>
+      </div>
+      
+      <div id="distributional" class="tab-content active">
+        <div id="distributional-loading" class="loading">Loading Distributional Results...</div>
+        <table id="distributional-table" class="display" style="display:none;"></table>
+      </div>
+      
+      <div id="topological" class="tab-content">
+        <div id="topological-loading" class="loading">Loading Topological Results...</div>
+        <table id="topological-table" class="display" style="display:none;"></table>
+      </div>
+      
+      <div id="hardness" class="tab-content">
+        <div id="hardness-loading" class="loading">Loading Hardness Results...</div>
+        <table id="hardness-table" class="display" style="display:none;"></table>
+      </div>
+      
+      <div id="complexity" class="tab-content">
+        <div id="complexity-loading" class="loading">Loading Complexity Results...</div>
+        <table id="complexity-table" class="display" style="display:none;"></table>
+      </div>
+    </div>
+
+    <!-- Utility Results -->
+    <h3 style="margin-top: 40px;">Utility Results</h3>
+    
+    <div class="tab-container">
+      <div class="tabs">
+        <button class="tab-button active" onclick="switchTab(event, 'utility-gains')">Utility Gains</button>
+        <button class="tab-button" onclick="switchTab(event, 'gain-indices')">Gain Indices</button>
+      </div>
+      
+      <div id="utility-gains" class="tab-content active">
+        <div id="utility-gains-loading" class="loading">Loading Utility Gains...</div>
+        <table id="utility-gains-table" class="display" style="display:none;"></table>
+      </div>
+      
+      <div id="gain-indices" class="tab-content">
+        <div id="gain-indices-loading" class="loading">Loading Gain Indices...</div>
+        <table id="gain-indices-table" class="display" style="display:none;"></table>
+      </div>
+    </div>
+  </section>
+
+  <section id="hardness">
+    <h2>Hardness Measures</h2>
+    <p>
+      HardVAE builds on a rich set of hardness measures that quantify how difficult individual instances are to model
+      or classify. These measures are grouped into neighborhood-based, likelihood-based, tree-based, and class-balance
+      categories. Each measure provides a different perspective on instance difficulty, and HardVAE can integrate them
+      individually or in combination.
+    </p>
+    <p>
+      <strong>Note:</strong> Detailed definitions and mathematical formulations of all hardness measures are provided 
+      in the Supplementary Appendix Section A.
+    </p>
+  </section>
+
+  <section id="repro">
+    <h2>Reproducibility & Code</h2>
+    <p>
+      To encourage reproducibility and further research, we release code repositories implementing HardVAE and the
+      baseline models, along with configuration files and scripts for computing hardness measures and multi-view
+      fidelity metrics.
+    </p>
+    <h3>GitHub Repositories</h3>
+    <ul>
+      <li><strong>HardVAE Implementation:</strong> [Link to repository]</li>
+      <li><strong>Experiments & Evaluation:</strong> [Link to repository]</li>
+      <li><strong>Configuration Files:</strong> [Link to repository]</li>
+    </ul>
+    <h3>Environment Setup</h3>
+    <p>To reproduce the experiments, set up the environment using:</p>
+    <pre><code>conda env create -f environment.yml
+conda activate hardvae</code></pre>
+    <h3>Running Experiments</h3>
+    <p>Detailed instructions for running experiments are provided in the respective repository READMEs.</p>
+  </section>
+
+  <section id="downloads">
+    <h2>Downloads</h2>
+    <ul>
+      <li><strong>Main Manuscript (PDF):</strong> [link]</li>
+      <li><strong>Supplementary Appendix (PDF):</strong> [link]</li>
+      <li><strong>Additional Figures (ZIP):</strong> [link]</li>
+      <li><strong>Configuration Files & Logs (ZIP):</strong> [link]</li>
+      <li><strong>Results Data (CSV):</strong> [link]</li>
+    </ul>
+  </section>
+</main>
+
+<footer>
+  HardVAE Companion Website – © Authors. Last updated: <span id="update-date"></span>
+</footer>
+
+<!-- jQuery (required for DataTables) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.0/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.0/vfs_fonts.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+
+<script>
+  // CSV parsing function
+  function parseCSV(csv) {
+    const lines = csv.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim());
+    const data = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+      const obj = {};
+      const currentLine = lines[i].split(',');
+      
+      for (let j = 0; j < headers.length; j++) {
+        obj[headers[j]] = currentLine[j] ? currentLine[j].trim() : '';
+      }
+      data.push(obj);
+    }
+    
+    return { headers, data };
+  }
+  
+  // Convert parsed data to DataTables format
+  function convertToDataTables(headers, data) {
+    return {
+      columns: headers.map(h => ({ title: h, data: h })),
+      data: data
+    };
+  }
+  
+  // Filter columns to keep only specified ones
+  function filterColumns(headers, data, columnsToKeep) {
+    const filteredHeaders = headers.filter(h => columnsToKeep.includes(h));
+    const filteredData = data.map(row => {
+      const filteredRow = {};
+      filteredHeaders.forEach(header => {
+        filteredRow[header] = row[header];
+      });
+      return filteredRow;
+    });
+    return { headers: filteredHeaders, data: filteredData };
+  }
+  
+  // Tab switching function
+  function switchTab(evt, tabName) {
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(tab => tab.classList.remove('active'));
+    
+    const tabButtons = evt.target.parentElement.querySelectorAll('.tab-button');
+    tabButtons.forEach(btn => btn.classList.remove('active'));
+    
+    document.getElementById(tabName).classList.add('active');
+    evt.target.classList.add('active');
+  }
+  
+  // Load CSV and initialize DataTable
+  function loadCSVTable(csvFile, tableId, loadingId, columnsToKeep = null) {
+    fetch(`data/${csvFile}`)
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.text();
+      })
+      .then(csv => {
+        let { headers, data } = parseCSV(csv);
+        
+        // Filter columns if specified
+        if (columnsToKeep) {
+          const filtered = filterColumns(headers, data, columnsToKeep);
+          headers = filtered.headers;
+          data = filtered.data;
+        }
+        
+        const dtConfig = convertToDataTables(headers, data);
+        
+        // Hide loading indicator
+        document.getElementById(loadingId).style.display = 'none';
+        
+        // Show table
+        const table = document.getElementById(tableId);
+        table.style.display = 'table';
+        
+        // Initialize DataTable
+        if ($.fn.DataTable.isDataTable(`#${tableId}`)) {
+          $(`#${tableId}`).DataTable().destroy();
+        }
+        
+        $(`#${tableId}`).DataTable({
+          columns: dtConfig.columns,
+          data: dtConfig.data,
+          pageLength: 25,
+          lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+          dom: 'lBfrtip',
+          buttons: [
+            'copy',
+            'csv',
+            'excel',
+            'pdf'
+          ],
+          responsive: true,
+          autoWidth: false
+        });
+      })
+      .catch(error => {
+        console.error(`Error loading ${csvFile}:`, error);
+        document.getElementById(loadingId).innerHTML = 
+          `<div class="error">Error loading data: ${error.message}</div>`;
+      });
+  }
+  
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    // Set update date
+    document.getElementById('update-date').textContent = new Date().toLocaleDateString();
+    
+    // Load tables
+    loadCSVTable('Distributional_results.csv', 'distributional-table', 'distributional-loading');
+    
+    // Load Topological results with only selected columns
+    const topologicalColumns = [
+      'dataset',
+      'hardness_metric',
+      'random_seed',
+      'weighting_strategy',
+      'Bottleneck_H0_mean',
+      'Bottleneck_H0_std',
+      'Wasserstein_H0_mean',
+      'Wasserstein_H0_std'
+    ];
+    loadCSVTable('Topological_results.csv', 'topological-table', 'topological-loading', topologicalColumns);
+    
+    loadCSVTable('Hardness_results.csv', 'hardness-table', 'hardness-loading');
+    loadCSVTable('Complexity_results.csv', 'complexity-table', 'complexity-loading');
+    loadCSVTable('utility_gains.csv', 'utility-gains-table', 'utility-gains-loading');
+    loadCSVTable('gain_indices.csv', 'gain-indices-table', 'gain-indices-loading');
+  });
+</script>
+
+</body>
+</html>
